@@ -1,2 +1,2 @@
 # lampapp
-LAMP stack using Packer and Terraform
+LAMP stack using Vagrant, Packer and Terraform
