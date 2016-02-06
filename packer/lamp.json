@@ -1,0 +1,56 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "atlas_token": ""
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-west-2",
+    "source_ami": "ami-9abea4fb",
+    "instance_type": "t2.micro",
+    "ssh_username": "ubuntu",
+    "ami_name": "packer-example {{timestamp}}"
+  }, {
+  "type": "googlecompute",
+  "account_file": "sreeni.json",
+  "project_id": "sreenipaasapp",
+  "source_image": "ubuntu-1404-trusty-v20160114e",
+  "zone": "us-central1-a",
+  "image_name": "mygooglelampstack"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "sleep 30",
+      "#!/bin/bash",
+      "sudo apt-get -y update",
+      "sudo apt-get -y install apache2",
+      "sudo 'mysql-server-5.5 mysql-server/root_password password rootpass' | debconf-set-selections",
+      "sudo 'mysql-server-5.5 mysql-server/root_password_again password rootpass' | debconf-set-selections",
+      "sudo apt-get -y install mysql-server libapache2-mod-auth-mysql php5-mysql",
+      "sudo apt-get -y install php5 libapache2-mod-php5 php5-mcrypt"
+    ]
+  }],
+  "post-processors": [{
+        "type": "atlas",
+        "only": ["amazon-ebs"],
+        "token": "{{user `atlas_token`}}",
+        "artifact": "smakam/lamp",
+        "artifact_type": "amazon.image",
+        "metadata": {
+          "created_at": "{{timestamp}}"
+        }
+      }, {
+        "type": "atlas",
+        "only": ["googlecompute"],
+        "token": "{{user `atlas_token`}}",
+        "artifact": "smakam/lamp",
+        "artifact_type": "googlecompute.image",
+        "metadata": {
+          "created_at": "{{timestamp}}"
+        }
+  }]
+}
